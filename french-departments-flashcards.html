@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>French Departments Flashcards</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0055A4 0%, #EF4135 50%, #FFFFFF 100%);
+            min-height: 100vh;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            color: #0055A4;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .header p {
+            color: #718096;
+            font-size: 1.1em;
+        }
+
+        .settings-section {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .question-types {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .question-type-btn {
+            padding: 10px 15px;
+            border: 2px solid #0055A4;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+        }
+
+        .question-type-btn.active {
+            background: #0055A4;
+            color: white;
+        }
+
+        .question-type-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 85, 164, 0.2);
+        }
+
+        .progress-section {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e2e8f0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #0055A4, #EF4135);
+            transition: width 0.3s ease;
+            border-radius: 10px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: #f7fafc;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            border-left: 4px solid #0055A4;
+        }
+
+        .stat-number {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #4a5568;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: #718096;
+        }
+
+        .flashcard {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .question {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #2d3748;
+            margin-bottom: 30px;
+        }
+
+        .department-shape-container {
+            width: 400px;
+            height: 400px;
+            margin: 20px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .department-shape-svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .department-shape-svg path {
+            fill: #0055A4;
+            stroke: #003d7a;
+            stroke-width: 2;
+            transition: fill 0.3s ease;
+        }
+
+        .department-shape-svg path:hover {
+            fill: #EF4135;
+        }
+
+        .answer-section {
+            margin: 20px 0;
+        }
+
+        .answer-input {
+            width: 100%;
+            max-width: 500px;
+            padding: 15px;
+            font-size: 1.2em;
+            border: 3px solid #e2e8f0;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            transition: border-color 0.3s ease;
+        }
+
+        .answer-input:focus {
+            outline: none;
+            border-color: #0055A4;
+            box-shadow: 0 0 0 3px rgba(0, 85, 164, 0.1);
+        }
+
+        .result {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+
+        .result.correct {
+            background: #f0fff4;
+            color: #38a169;
+            border: 2px solid #68d391;
+        }
+
+        .result.incorrect {
+            background: #fff5f5;
+            color: #e53e3e;
+            border: 2px solid #fc8181;
+        }
+
+        .confidence-section {
+            margin: 20px 0;
+        }
+
+        .confidence-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .confidence-btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            min-width: 120px;
+        }
+
+        .confidence-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .confidence-1 { background: #fed7d7; color: #c53030; }
+        .confidence-2 { background: #feebc8; color: #dd6b20; }
+        .confidence-3 { background: #fefcbf; color: #d69e2e; }
+        .confidence-4 { background: #c6f6d5; color: #38a169; }
+        .confidence-5 { background: #bee3f8; color: #3182ce; }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #0055A4, #003d7a);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, #48bb78, #38a169);
+            color: white;
+        }
+
+        .completion-message {
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(45deg, #48bb78, #38a169);
+            color: white;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        .completion-message h2 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2em;
+            color: #718096;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            .question {
+                font-size: 1.3em;
+            }
+            
+            .confidence-buttons {
+                flex-direction: column;
+            }
+            
+            .confidence-btn {
+                width: 100%;
+            }
+
+            .department-shape-container {
+                width: 300px;
+                height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🇫🇷 French Departments Flashcards 🇫🇷</h1>
+            <p>Learn the departments, their capitals, and their shapes</p>
+        </div>
+
+        <div class="settings-section">
+            <h3>Question Types:</h3>
+            <div class="question-types">
+                <button class="question-type-btn active" data-type="name-to-capital">Department → Capital</button>
+                <button class="question-type-btn active" data-type="capital-to-name">Capital → Department</button>
+                <button class="question-type-btn active" data-type="shape-to-name">Shape → Department</button>
+            </div>
+        </div>
+
+        <div class="progress-section">
+            <h3>Progress</h3>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+            </div>
+            <p id="progressText">Mastered: 0/288 (0%)</p>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="stat1">0</div>
+                    <div class="stat-label">Level 1</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="stat2">0</div>
+                    <div class="stat-label">Level 2</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="stat3">0</div>
+                    <div class="stat-label">Level 3</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="stat4">0</div>
+                    <div class="stat-label">Level 4</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="stat5">0</div>
+                    <div class="stat-label">Level 5</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="completion-message hidden" id="completionMessage">
+            <h2>🎉 Congratulations! 🎉</h2>
+            <p>You've mastered all the French departments!</p>
+            <button class="btn btn-success" onclick="startSession()">Start Over</button>
+        </div>
+
+        <div class="flashcard" id="flashcardSection">
+            <div class="loading" id="loadingMessage">Loading map data...</div>
+            <div class="hidden" id="mainContent">
+                <div class="question" id="currentQuestion">Click "Start" to begin</div>
+                <div id="imageContainer"></div>
+                <div class="answer-section">
+                    <input type="text" id="answerInput" class="answer-input" placeholder="Your answer..." autocomplete="off">
+                    <div id="resultSection" class="hidden"></div>
+                </div>
+                <div class="confidence-section">
+                    <p><strong>Confidence Level:</strong></p>
+                    <div class="confidence-buttons">
+                        <button class="confidence-btn confidence-1" onclick="setConfidence(1)">1 - No idea</button>
+                        <button class="confidence-btn confidence-2" onclick="setConfidence(2)">2 - Very uncertain</button>
+                        <button class="confidence-btn confidence-3" onclick="setConfidence(3)">3 - Somewhat confident</button>
+                        <button class="confidence-btn confidence-4" onclick="setConfidence(4)">4 - Quite confident</button>
+                        <button class="confidence-btn confidence-5" onclick="setConfidence(5)">5 - Completely confident</button>
+                    </div>
+                </div>
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="submitAnswer()">Check Answer</button>
+                    <button class="btn btn-secondary" onclick="nextQuestion()">Next Question</button>
+                </div>
+            </div>
+        </div>
+
+        <footer style="background: rgba(255, 255, 255, 0.95); padding: 20px; border-radius: 15px; margin-top: 30px; text-align: center; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);">
+            <p style="color: #718096; font-size: 0.9em; margin: 0;">
+                Department maps provided by <a href="https://github.com/VictorCazanave/svg-maps" target="_blank" rel="noopener noreferrer" style="color: #0055A4; text-decoration: none; font-weight: bold;">@svg-maps/france.departments</a>
+                • Licensed under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer" style="color: #0055A4; text-decoration: none;">CC BY 4.0</a>
+            </p>
+        </footer>
+    </div>
+
+    <script type="module">
+        // Load the France departments map from CDN
+        import franceDepartments from 'https://cdn.jsdelivr.net/npm/@svg-maps/france.departments@1.0.1/+esm';
+        
+        class FrenchDepartmentsFlashcards {
+            constructor(mapData) {
+                this.mapData = mapData;
+                
+                // French departments data (Metropolitan France)
+                this.departments = {"Ain":{"capital":"Bourg-en-Bresse","number":"01"},"Aisne":{"capital":"Laon","number":"02"},"Allier":{"capital":"Moulins","number":"03"},"Alpes-de-Haute-Provence":{"capital":"Digne-les-Bains","number":"04"},"Hautes-Alpes":{"capital":"Gap","number":"05"},"Alpes-Maritimes":{"capital":"Nice","number":"06"},"Ardèche":{"capital":"Privas","number":"07"},"Ardennes":{"capital":"Charleville-Mézières","number":"08"},"Ariège":{"capital":"Foix","number":"09"},"Aube":{"capital":"Troyes","number":"10"},"Aude":{"capital":"Carcassonne","number":"11"},"Aveyron":{"capital":"Rodez","number":"12"},"Bouches-du-Rhône":{"capital":"Marseille","number":"13"},"Calvados":{"capital":"Caen","number":"14"},"Cantal":{"capital":"Aurillac","number":"15"},"Charente":{"capital":"Angoulême","number":"16"},"Charente-Maritime":{"capital":"La Rochelle","number":"17"},"Cher":{"capital":"Bourges","number":"18"},"Corrèze":{"capital":"Tulle","number":"19"},"Côte-d'Or":{"capital":"Dijon","number":"21"},"Côtes-d'Armor":{"capital":"Saint-Brieuc","number":"22"},"Creuse":{"capital":"Guéret","number":"23"},"Dordogne":{"capital":"Périgueux","number":"24"},"Doubs":{"capital":"Besançon","number":"25"},"Drôme":{"capital":"Valence","number":"26"},"Eure":{"capital":"Évreux","number":"27"},"Eure-et-Loir":{"capital":"Chartres","number":"28"},"Finistère":{"capital":"Quimper","number":"29"},"Corse-du-Sud":{"capital":"Ajaccio","number":"2A"},"Haute-Corse":{"capital":"Bastia","number":"2B"},"Gard":{"capital":"Nîmes","number":"30"},"Haute-Garonne":{"capital":"Toulouse","number":"31"},"Gers":{"capital":"Auch","number":"32"},"Gironde":{"capital":"Bordeaux","number":"33"},"Hérault":{"capital":"Montpellier","number":"34"},"Ille-et-Vilaine":{"capital":"Rennes","number":"35"},"Indre":{"capital":"Châteauroux","number":"36"},"Indre-et-Loire":{"capital":"Tours","number":"37"},"Isère":{"capital":"Grenoble","number":"38"},"Jura":{"capital":"Lons-le-Saunier","number":"39"},"Landes":{"capital":"Mont-de-Marsan","number":"40"},"Loir-et-Cher":{"capital":"Blois","number":"41"},"Loire":{"capital":"Saint-Étienne","number":"42"},"Haute-Loire":{"capital":"Le Puy-en-Velay","number":"43"},"Loire-Atlantique":{"capital":"Nantes","number":"44"},"Loiret":{"capital":"Orléans","number":"45"},"Lot":{"capital":"Cahors","number":"46"},"Lot-et-Garonne":{"capital":"Agen","number":"47"},"Lozère":{"capital":"Mende","number":"48"},"Maine-et-Loire":{"capital":"Angers","number":"49"},"Manche":{"capital":"Saint-Lô","number":"50"},"Marne":{"capital":"Châlons-en-Champagne","number":"51"},"Haute-Marne":{"capital":"Chaumont","number":"52"},"Mayenne":{"capital":"Laval","number":"53"},"Meurthe-et-Moselle":{"capital":"Nancy","number":"54"},"Meuse":{"capital":"Bar-le-Duc","number":"55"},"Morbihan":{"capital":"Vannes","number":"56"},"Moselle":{"capital":"Metz","number":"57"},"Nièvre":{"capital":"Nevers","number":"58"},"Nord":{"capital":"Lille","number":"59"},"Oise":{"capital":"Beauvais","number":"60"},"Orne":{"capital":"Alençon","number":"61"},"Pas-de-Calais":{"capital":"Arras","number":"62"},"Puy-de-Dôme":{"capital":"Clermont-Ferrand","number":"63"},"Pyrénées-Atlantiques":{"capital":"Pau","number":"64"},"Hautes-Pyrénées":{"capital":"Tarbes","number":"65"},"Pyrénées-Orientales":{"capital":"Perpignan","number":"66"},"Bas-Rhin":{"capital":"Strasbourg","number":"67"},"Haut-Rhin":{"capital":"Colmar","number":"68"},"Rhône":{"capital":"Lyon","number":"69"},"Haute-Saône":{"capital":"Vesoul","number":"70"},"Saône-et-Loire":{"capital":"Mâcon","number":"71"},"Sarthe":{"capital":"Le Mans","number":"72"},"Savoie":{"capital":"Chambéry","number":"73"},"Haute-Savoie":{"capital":"Annecy","number":"74"},"Paris":{"capital":"Paris","number":"75"},"Seine-Maritime":{"capital":"Rouen","number":"76"},"Seine-et-Marne":{"capital":"Melun","number":"77"},"Yvelines":{"capital":"Versailles","number":"78"},"Deux-Sèvres":{"capital":"Niort","number":"79"},"Somme":{"capital":"Amiens","number":"80"},"Tarn":{"capital":"Albi","number":"81"},"Tarn-et-Garonne":{"capital":"Montauban","number":"82"},"Var":{"capital":"Toulon","number":"83"},"Vaucluse":{"capital":"Avignon","number":"84"},"Vendée":{"capital":"La Roche-sur-Yon","number":"85"},"Vienne":{"capital":"Poitiers","number":"86"},"Haute-Vienne":{"capital":"Limoges","number":"87"},"Vosges":{"capital":"Épinal","number":"88"},"Yonne":{"capital":"Auxerre","number":"89"},"Territoire de Belfort":{"capital":"Belfort","number":"90"},"Essonne":{"capital":"Évry-Courcouronnes","number":"91"},"Hauts-de-Seine":{"capital":"Nanterre","number":"92"},"Seine-Saint-Denis":{"capital":"Bobigny","number":"93"},"Val-de-Marne":{"capital":"Créteil","number":"94"},"Val-d'Oise":{"capital":"Cergy","number":"95"}};
+
+                // Create map from department name to SVG path
+                this.departmentPaths = {};
+                if (this.mapData && this.mapData.locations) {
+                    this.mapData.locations.forEach(location => {
+                        this.departmentPaths[location.name] = location.path;
+                    });
+                }
+
+                this.enabledQuestionTypes = new Set(['name-to-capital', 'capital-to-name', 'shape-to-name']);
+                this.confidenceScores = this.loadProgress();
+                this.currentQuestion = null;
+                this.hasAnswered = false;
+                this.totalQuestions = Object.keys(this.departments).length * this.enabledQuestionTypes.size;
+                
+                this.setupQuestionTypeButtons();
+                this.updateProgress();
+                
+                document.getElementById('loadingMessage').classList.add('hidden');
+                document.getElementById('mainContent').classList.remove('hidden');
+            }
+
+            setupQuestionTypeButtons() {
+                const buttons = document.querySelectorAll('.question-type-btn');
+                buttons.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const type = btn.getAttribute('data-type');
+                        if (this.enabledQuestionTypes.has(type)) {
+                            this.enabledQuestionTypes.delete(type);
+                            btn.classList.remove('active');
+                        } else {
+                            this.enabledQuestionTypes.add(type);
+                            btn.classList.add('active');
+                        }
+                        this.totalQuestions = Object.keys(this.departments).length * this.enabledQuestionTypes.size;
+                        this.updateProgress();
+                    });
+                });
+            }
+
+            loadProgress() {
+                const saved = localStorage.getItem('french_departments_progress');
+                if (saved) {
+                    return JSON.parse(saved);
+                }
+                
+                const scores = {};
+                for (const [dept] of Object.entries(this.departments)) {
+                    scores[`${dept}:name-to-capital`] = 1;
+                    scores[`${dept}:capital-to-name`] = 1;
+                    scores[`${dept}:shape-to-name`] = 1;
+                }
+                return scores;
+            }
+
+            saveProgress() {
+                localStorage.setItem('french_departments_progress', JSON.stringify(this.confidenceScores));
+            }
+
+            selectQuestion() {
+                const allQuestions = [];
+                
+                for (const [dept, data] of Object.entries(this.departments)) {
+                    for (const type of this.enabledQuestionTypes) {
+                        const key = `${dept}:${type}`;
+                        const confidence = this.confidenceScores[key];
+                        const weight = Math.pow(6 - confidence, 2);
+                        
+                        for (let i = 0; i < weight; i++) {
+                            allQuestions.push({dept, capital: data.capital, number: data.number, type, key});
+                        }
+                    }
+                }
+                
+                if (allQuestions.length === 0) return null;
+                return allQuestions[Math.floor(Math.random() * allQuestions.length)];
+            }
+
+            checkAnswer(userAnswer, correctAnswer) {
+                const userClean = userAnswer.toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                const correctClean = correctAnswer.toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                
+                if (userClean === correctClean) return true;
+                if (userClean.length > 3 && correctClean.includes(userClean)) return true;
+                
+                const alternates = {'saint': 'st', 'sainte': 'ste'};
+                for (const [full, abbr] of Object.entries(alternates)) {
+                    if (userClean.includes(full) && correctClean.includes(abbr)) return true;
+                    if (userClean.includes(abbr) && correctClean.includes(full)) return true;
+                }
+                
+                return false;
+            }
+
+            updateProgress() {
+                const confidenceCounts = [0, 0, 0, 0, 0, 0];
+                let totalEnabled = 0;
+                
+                for (const [dept] of Object.entries(this.departments)) {
+                    for (const type of this.enabledQuestionTypes) {
+                        const key = `${dept}:${type}`;
+                        const confidence = this.confidenceScores[key];
+                        confidenceCounts[confidence]++;
+                        totalEnabled++;
+                    }
+                }
+                
+                const mastered = confidenceCounts[5];
+                const percentage = totalEnabled > 0 ? Math.round((mastered / totalEnabled) * 100) : 0;
+                
+                document.getElementById('progressFill').style.width = percentage + '%';
+                document.getElementById('progressText').textContent = `Mastered: ${mastered}/${totalEnabled} (${percentage}%)`;
+                
+                for (let i = 1; i <= 5; i++) {
+                    document.getElementById(`stat${i}`).textContent = confidenceCounts[i];
+                }
+                
+                if (totalEnabled > 0 && mastered === totalEnabled) {
+                    document.getElementById('completionMessage').classList.remove('hidden');
+                    document.getElementById('flashcardSection').classList.add('hidden');
+                }
+            }
+
+            getDepartmentShape(deptName) {
+                return this.departmentPaths[deptName] || null;
+            }
+
+            displayQuestion() {
+                const question = this.selectQuestion();
+                if (!question) return;
+                
+                this.currentQuestion = question;
+                this.hasAnswered = false;
+                
+                const imageContainer = document.getElementById('imageContainer');
+                imageContainer.innerHTML = '';
+                
+                let questionText = '';
+                
+                if (question.type === 'name-to-capital') {
+                    questionText = `What is the capital of ${question.dept}?`;
+                } else if (question.type === 'capital-to-name') {
+                    questionText = `${question.capital} is the capital of which department?`;
+                } else if (question.type === 'shape-to-name') {
+                    questionText = `What is the name of this department?`;
+                    
+                    const shapePath = this.getDepartmentShape(question.dept);
+                    
+                    if (shapePath) {
+                        const svgContainer = document.createElement('div');
+                        svgContainer.className = 'department-shape-container';
+                        
+                        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                        svg.setAttribute('class', 'department-shape-svg');
+                        svg.setAttribute('viewBox', this.mapData.viewBox);
+                        
+                        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                        path.setAttribute('d', shapePath);
+                        
+                        svg.appendChild(path);
+                        svgContainer.appendChild(svg);
+                        imageContainer.appendChild(svgContainer);
+                    } else {
+                        // Fallback
+                        const deptBox = document.createElement('div');
+                        deptBox.className = 'department-shape-container';
+                        deptBox.style.cssText = 'display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px';
+                        
+                        const numberBadge = document.createElement('div');
+                        numberBadge.style.cssText = 'font-size:4em;font-weight:bold;color:#0055A4;background:white;border:4px solid #0055A4;border-radius:50%;width:150px;height:150px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,85,164,0.3)';
+                        numberBadge.textContent = question.number;
+                        
+                        const hintText = document.createElement('div');
+                        hintText.style.cssText = 'font-size:1.2em;color:#718096;font-style:italic';
+                        hintText.textContent = `Department #${question.number}`;
+                        
+                        deptBox.appendChild(numberBadge);
+                        deptBox.appendChild(hintText);
+                        imageContainer.appendChild(deptBox);
+                    }
+                }
+                
+                document.getElementById('currentQuestion').textContent = questionText;
+                document.getElementById('answerInput').value = '';
+                document.getElementById('resultSection').classList.add('hidden');
+                document.getElementById('resultSection').innerHTML = '';
+            }
+        }
+
+        let game;
+        
+        try {
+            game = new FrenchDepartmentsFlashcards(franceDepartments);
+            window.game = game;
+            game.displayQuestion();
+        } catch (error) {
+            console.error('Error loading map:', error);
+            document.getElementById('loadingMessage').textContent = 'Error loading map data. Please refresh the page.';
+        }
+
+        window.submitAnswer = function() {
+            if (!game || !game.currentQuestion) return;
+            
+            const userInput = document.getElementById('answerInput').value.trim();
+            const resultSection = document.getElementById('resultSection');
+            
+            let correctAnswer = '';
+            if (game.currentQuestion.type === 'name-to-capital') {
+                correctAnswer = game.currentQuestion.capital;
+            } else {
+                correctAnswer = game.currentQuestion.dept;
+            }
+            
+            if (userInput === '') {
+                resultSection.innerHTML = `<strong>Correct answer:</strong> ${correctAnswer}`;
+                resultSection.className = 'result';
+                resultSection.classList.remove('hidden');
+            } else if (!isNaN(userInput) && userInput >= 1 && userInput <= 5) {
+                window.setConfidence(parseInt(userInput));
+                return;
+            } else {
+                const isCorrect = game.checkAnswer(userInput, correctAnswer);
+                
+                if (isCorrect) {
+                    resultSection.innerHTML = `✅ Correct!<br><strong>Your answer:</strong> ${userInput}`;
+                    resultSection.className = 'result correct';
+                } else {
+                    resultSection.innerHTML = `❌ Incorrect<br><strong>Your answer:</strong> ${userInput}<br><strong>Correct answer:</strong> ${correctAnswer}`;
+                    resultSection.className = 'result incorrect';
+                }
+                resultSection.classList.remove('hidden');
+            }
+            
+            game.hasAnswered = true;
+        };
+
+        window.setConfidence = function(level) {
+            if (!game || !game.currentQuestion) return;
+            if (!game.hasAnswered) window.submitAnswer();
+            
+            game.confidenceScores[game.currentQuestion.key] = level;
+            game.saveProgress();
+            game.updateProgress();
+            
+            const resultSection = document.getElementById('resultSection');
+            resultSection.innerHTML += `<br><strong>Confidence set to level ${level}</strong>`;
+            
+            setTimeout(() => window.nextQuestion(), 1500);
+        };
+
+        window.nextQuestion = function() {
+            if (game) game.displayQuestion();
+        };
+
+        window.startSession = function() {
+            document.getElementById('completionMessage').classList.add('hidden');
+            document.getElementById('flashcardSection').classList.remove('hidden');
+            if (game) game.displayQuestion();
+        };
+
+        document.getElementById('answerInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') window.submitAnswer();
+        });
+    </script>
+</body>
+</html>
