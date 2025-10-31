@@ -197,6 +197,16 @@
             box-shadow: 0 0 0 3px rgba(0, 85, 164, 0.1);
         }
 
+        .answer-input.correct {
+            border-color: #38a169;
+            background-color: #f0fff4;
+        }
+
+        .answer-input.incorrect {
+            border-color: #e53e3e;
+            background-color: #fff5f5;
+        }
+
         .result {
             padding: 15px;
             border-radius: 10px;
@@ -239,9 +249,14 @@
             min-width: 120px;
         }
 
-        .confidence-btn:hover {
+        .confidence-btn:hover:not(:disabled) {
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .confidence-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
 
         .confidence-1 { background: #fed7d7; color: #c53030; }
@@ -268,9 +283,14 @@
             transition: all 0.3s ease;
         }
 
-        .btn:hover {
+        .btn:hover:not(:disabled) {
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
 
         .btn-primary {
@@ -396,22 +416,21 @@
                 <div class="question" id="currentQuestion">Click "Start" to begin</div>
                 <div id="imageContainer"></div>
                 <div class="answer-section">
-                    <input type="text" id="answerInput" class="answer-input" placeholder="Your answer..." autocomplete="off">
+                    <input type="text" id="answerInput" class="answer-input" placeholder="Type the correct answer..." autocomplete="off">
                     <div id="resultSection" class="hidden"></div>
                 </div>
                 <div class="confidence-section">
-                    <p><strong>Confidence Level:</strong></p>
+                    <p><strong>Rate your confidence (after answering correctly):</strong></p>
                     <div class="confidence-buttons">
-                        <button class="confidence-btn confidence-1" onclick="setConfidence(1)">1 - No idea</button>
-                        <button class="confidence-btn confidence-2" onclick="setConfidence(2)">2 - Very uncertain</button>
-                        <button class="confidence-btn confidence-3" onclick="setConfidence(3)">3 - Somewhat confident</button>
-                        <button class="confidence-btn confidence-4" onclick="setConfidence(4)">4 - Quite confident</button>
-                        <button class="confidence-btn confidence-5" onclick="setConfidence(5)">5 - Completely confident</button>
+                        <button class="confidence-btn confidence-1" onclick="setConfidence(1)" id="dontKnowBtn">1 - Don't know</button>
+                        <button class="confidence-btn confidence-2" onclick="setConfidence(2)" disabled>2 - Very uncertain</button>
+                        <button class="confidence-btn confidence-3" onclick="setConfidence(3)" disabled>3 - Somewhat confident</button>
+                        <button class="confidence-btn confidence-4" onclick="setConfidence(4)" disabled>4 - Quite confident</button>
+                        <button class="confidence-btn confidence-5" onclick="setConfidence(5)" disabled>5 - Completely confident</button>
                     </div>
                 </div>
                 <div class="action-buttons">
-                    <button class="btn btn-primary" onclick="submitAnswer()">Check Answer</button>
-                    <button class="btn btn-secondary" onclick="nextQuestion()">Next Question</button>
+                    <button class="btn btn-primary" id="checkBtn" onclick="checkAnswer()">Check Answer</button>
                 </div>
             </div>
         </div>
@@ -435,6 +454,201 @@
                 // French departments data (Metropolitan France)
                 this.departments = {"Ain":{"capital":"Bourg-en-Bresse","number":"01"},"Aisne":{"capital":"Laon","number":"02"},"Allier":{"capital":"Moulins","number":"03"},"Alpes-de-Haute-Provence":{"capital":"Digne-les-Bains","number":"04"},"Hautes-Alpes":{"capital":"Gap","number":"05"},"Alpes-Maritimes":{"capital":"Nice","number":"06"},"Ardèche":{"capital":"Privas","number":"07"},"Ardennes":{"capital":"Charleville-Mézières","number":"08"},"Ariège":{"capital":"Foix","number":"09"},"Aube":{"capital":"Troyes","number":"10"},"Aude":{"capital":"Carcassonne","number":"11"},"Aveyron":{"capital":"Rodez","number":"12"},"Bouches-du-Rhône":{"capital":"Marseille","number":"13"},"Calvados":{"capital":"Caen","number":"14"},"Cantal":{"capital":"Aurillac","number":"15"},"Charente":{"capital":"Angoulême","number":"16"},"Charente-Maritime":{"capital":"La Rochelle","number":"17"},"Cher":{"capital":"Bourges","number":"18"},"Corrèze":{"capital":"Tulle","number":"19"},"Côte-d'Or":{"capital":"Dijon","number":"21"},"Côtes-d'Armor":{"capital":"Saint-Brieuc","number":"22"},"Creuse":{"capital":"Guéret","number":"23"},"Dordogne":{"capital":"Périgueux","number":"24"},"Doubs":{"capital":"Besançon","number":"25"},"Drôme":{"capital":"Valence","number":"26"},"Eure":{"capital":"Évreux","number":"27"},"Eure-et-Loir":{"capital":"Chartres","number":"28"},"Finistère":{"capital":"Quimper","number":"29"},"Corse-du-Sud":{"capital":"Ajaccio","number":"2A"},"Haute-Corse":{"capital":"Bastia","number":"2B"},"Gard":{"capital":"Nîmes","number":"30"},"Haute-Garonne":{"capital":"Toulouse","number":"31"},"Gers":{"capital":"Auch","number":"32"},"Gironde":{"capital":"Bordeaux","number":"33"},"Hérault":{"capital":"Montpellier","number":"34"},"Ille-et-Vilaine":{"capital":"Rennes","number":"35"},"Indre":{"capital":"Châteauroux","number":"36"},"Indre-et-Loire":{"capital":"Tours","number":"37"},"Isère":{"capital":"Grenoble","number":"38"},"Jura":{"capital":"Lons-le-Saunier","number":"39"},"Landes":{"capital":"Mont-de-Marsan","number":"40"},"Loir-et-Cher":{"capital":"Blois","number":"41"},"Loire":{"capital":"Saint-Étienne","number":"42"},"Haute-Loire":{"capital":"Le Puy-en-Velay","number":"43"},"Loire-Atlantique":{"capital":"Nantes","number":"44"},"Loiret":{"capital":"Orléans","number":"45"},"Lot":{"capital":"Cahors","number":"46"},"Lot-et-Garonne":{"capital":"Agen","number":"47"},"Lozère":{"capital":"Mende","number":"48"},"Maine-et-Loire":{"capital":"Angers","number":"49"},"Manche":{"capital":"Saint-Lô","number":"50"},"Marne":{"capital":"Châlons-en-Champagne","number":"51"},"Haute-Marne":{"capital":"Chaumont","number":"52"},"Mayenne":{"capital":"Laval","number":"53"},"Meurthe-et-Moselle":{"capital":"Nancy","number":"54"},"Meuse":{"capital":"Bar-le-Duc","number":"55"},"Morbihan":{"capital":"Vannes","number":"56"},"Moselle":{"capital":"Metz","number":"57"},"Nièvre":{"capital":"Nevers","number":"58"},"Nord":{"capital":"Lille","number":"59"},"Oise":{"capital":"Beauvais","number":"60"},"Orne":{"capital":"Alençon","number":"61"},"Pas-de-Calais":{"capital":"Arras","number":"62"},"Puy-de-Dôme":{"capital":"Clermont-Ferrand","number":"63"},"Pyrénées-Atlantiques":{"capital":"Pau","number":"64"},"Hautes-Pyrénées":{"capital":"Tarbes","number":"65"},"Pyrénées-Orientales":{"capital":"Perpignan","number":"66"},"Bas-Rhin":{"capital":"Strasbourg","number":"67"},"Haut-Rhin":{"capital":"Colmar","number":"68"},"Rhône":{"capital":"Lyon","number":"69"},"Haute-Saône":{"capital":"Vesoul","number":"70"},"Saône-et-Loire":{"capital":"Mâcon","number":"71"},"Sarthe":{"capital":"Le Mans","number":"72"},"Savoie":{"capital":"Chambéry","number":"73"},"Haute-Savoie":{"capital":"Annecy","number":"74"},"Paris":{"capital":"Paris","number":"75"},"Seine-Maritime":{"capital":"Rouen","number":"76"},"Seine-et-Marne":{"capital":"Melun","number":"77"},"Yvelines":{"capital":"Versailles","number":"78"},"Deux-Sèvres":{"capital":"Niort","number":"79"},"Somme":{"capital":"Amiens","number":"80"},"Tarn":{"capital":"Albi","number":"81"},"Tarn-et-Garonne":{"capital":"Montauban","number":"82"},"Var":{"capital":"Toulon","number":"83"},"Vaucluse":{"capital":"Avignon","number":"84"},"Vendée":{"capital":"La Roche-sur-Yon","number":"85"},"Vienne":{"capital":"Poitiers","number":"86"},"Haute-Vienne":{"capital":"Limoges","number":"87"},"Vosges":{"capital":"Épinal","number":"88"},"Yonne":{"capital":"Auxerre","number":"89"},"Territoire de Belfort":{"capital":"Belfort","number":"90"},"Essonne":{"capital":"Évry-Courcouronnes","number":"91"},"Hauts-de-Seine":{"capital":"Nanterre","number":"92"},"Seine-Saint-Denis":{"capital":"Bobigny","number":"93"},"Val-de-Marne":{"capital":"Créteil","number":"94"},"Val-d'Oise":{"capital":"Cergy","number":"95"}};
 
+                // Phonetic pronunciations for English speakers
+                this.phonetics = {
+                    "Ain": "an",
+                    "Aisne": "EN",
+                    "Allier": "al-YAY",
+                    "Alpes-de-Haute-Provence": "alp duh OHT pro-VAHNS",
+                    "Hautes-Alpes": "oht ALP",
+                    "Alpes-Maritimes": "alp mah-ree-TEEM",
+                    "Ardèche": "ar-DESH",
+                    "Ardennes": "ar-DEN",
+                    "Ariège": "ah-ree-EZHE",
+                    "Aube": "OHB",
+                    "Aude": "OHD",
+                    "Aveyron": "ah-vay-ROHN",
+                    "Bouches-du-Rhône": "boosh doo ROHN",
+                    "Calvados": "kal-vah-DOHS",
+                    "Cantal": "kahn-TAL",
+                    "Charente": "shah-RAHNT",
+                    "Charente-Maritime": "shah-rahnt mah-ree-TEEM",
+                    "Cher": "SHAIR",
+                    "Corrèze": "koh-REZ",
+                    "Côte-d'Or": "koht DOR",
+                    "Côtes-d'Armor": "koht dar-MOR",
+                    "Creuse": "KRUHZ",
+                    "Dordogne": "dor-DON-yuh",
+                    "Doubs": "DOO",
+                    "Drôme": "DROHM",
+                    "Eure": "UHR",
+                    "Eure-et-Loir": "uhr ay LWAR",
+                    "Finistère": "fee-nee-STAIR",
+                    "Corse-du-Sud": "kors doo SOOD",
+                    "Haute-Corse": "oht KORS",
+                    "Gard": "GAR",
+                    "Haute-Garonne": "oht gah-RON",
+                    "Gers": "ZHAIR",
+                    "Gironde": "zhee-ROHND",
+                    "Hérault": "ay-ROH",
+                    "Ille-et-Vilaine": "eel ay vee-LEN",
+                    "Indre": "AN-druh",
+                    "Indre-et-Loire": "an-druh ay LWAR",
+                    "Isère": "ee-ZAIR",
+                    "Jura": "zhoo-RAH",
+                    "Landes": "LAHND",
+                    "Loir-et-Cher": "lwar ay SHAIR",
+                    "Loire": "LWAR",
+                    "Haute-Loire": "oht LWAR",
+                    "Loire-Atlantique": "lwar at-lahn-TEEK",
+                    "Loiret": "lwar-AY",
+                    "Lot": "LOT",
+                    "Lot-et-Garonne": "lot ay gah-RON",
+                    "Lozère": "loh-ZAIR",
+                    "Maine-et-Loire": "men ay LWAR",
+                    "Manche": "MAHNSH",
+                    "Marne": "MARN",
+                    "Haute-Marne": "oht MARN",
+                    "Mayenne": "my-EN",
+                    "Meurthe-et-Moselle": "MUHRT ay moh-ZEL",
+                    "Meuse": "MUHZ",
+                    "Morbihan": "mor-bee-AHN",
+                    "Moselle": "moh-ZEL",
+                    "Nièvre": "nee-EV-ruh",
+                    "Nord": "NOR",
+                    "Oise": "WAZ",
+                    "Orne": "ORN",
+                    "Pas-de-Calais": "pah duh kah-LAY",
+                    "Puy-de-Dôme": "pwee duh DOME",
+                    "Pyrénées-Atlantiques": "peer-ay-nay at-lahn-TEEK",
+                    "Hautes-Pyrénées": "oht peer-ay-NAY",
+                    "Pyrénées-Orientales": "peer-ay-nay or-ee-ahn-TAL",
+                    "Bas-Rhin": "bah RAN",
+                    "Haut-Rhin": "oh RAN",
+                    "Rhône": "ROHN",
+                    "Haute-Saône": "oht SOHN",
+                    "Saône-et-Loire": "sohn ay LWAR",
+                    "Sarthe": "SART",
+                    "Savoie": "sah-VWA",
+                    "Haute-Savoie": "oht sah-VWA",
+                    "Paris": "pah-REE",
+                    "Seine-Maritime": "sen mah-ree-TEEM",
+                    "Seine-et-Marne": "sen ay MARN",
+                    "Yvelines": "eev-LEEN",
+                    "Deux-Sèvres": "duh SEV-ruh",
+                    "Somme": "SUM",
+                    "Tarn": "TARN",
+                    "Tarn-et-Garonne": "tarn ay gah-RON",
+                    "Var": "VAR",
+                    "Vaucluse": "voh-KLOOZ",
+                    "Vendée": "vahn-DAY",
+                    "Vienne": "vee-EN",
+                    "Haute-Vienne": "oht vee-EN",
+                    "Vosges": "VOZH",
+                    "Yonne": "YON",
+                    "Territoire de Belfort": "tair-ee-TWAR duh bel-FOR",
+                    "Essonne": "eh-SON",
+                    "Hauts-de-Seine": "oh duh SEN",
+                    "Seine-Saint-Denis": "sen san duh-NEE",
+                    "Val-de-Marne": "val duh MARN",
+                    "Val-d'Oise": "val DWAZ",
+                    "Bourg-en-Bresse": "boor ahn BRES",
+                    "Laon": "LAHN",
+                    "Moulins": "moo-LAN",
+                    "Digne-les-Bains": "DEEN-yuh lay BAN",
+                    "Gap": "GAP",
+                    "Nice": "NEES",
+                    "Privas": "pree-VAH",
+                    "Charleville-Mézières": "shar-luh-VEEL may-zee-AIR",
+                    "Foix": "FWA",
+                    "Troyes": "TRWA",
+                    "Carcassonne": "kar-kah-SON",
+                    "Rodez": "roh-DEZ",
+                    "Marseille": "mar-SAY",
+                    "Caen": "KAHN",
+                    "Aurillac": "oh-ree-YAK",
+                    "Angoulême": "ahn-goo-LEM",
+                    "La Rochelle": "lah roh-SHEL",
+                    "Bourges": "BOORZH",
+                    "Tulle": "TOOL",
+                    "Dijon": "dee-ZHOHN",
+                    "Saint-Brieuc": "san bree-UH",
+                    "Guéret": "gay-RAY",
+                    "Périgueux": "pay-ree-GUH",
+                    "Besançon": "buh-zahn-SOHN",
+                    "Valence": "vah-LAHNS",
+                    "Évreux": "ay-VRUH",
+                    "Chartres": "SHAR-truh",
+                    "Quimper": "kam-PAIR",
+                    "Ajaccio": "ah-YAH-choh",
+                    "Bastia": "bah-STEE-ah",
+                    "Nîmes": "NEEM",
+                    "Toulouse": "too-LOOZ",
+                    "Auch": "OHSH",
+                    "Bordeaux": "bor-DOH",
+                    "Montpellier": "mohn-pell-YAY",
+                    "Rennes": "REN",
+                    "Châteauroux": "shah-toh-ROO",
+                    "Tours": "TOOR",
+                    "Grenoble": "gruh-NOH-bluh",
+                    "Lons-le-Saunier": "lohn luh soh-NYAY",
+                    "Mont-de-Marsan": "mohn duh mar-SAHN",
+                    "Blois": "BLWA",
+                    "Saint-Étienne": "sant ay-tee-EN",
+                    "Le Puy-en-Velay": "luh pwee ahn vuh-LAY",
+                    "Nantes": "NAHNT",
+                    "Orléans": "or-lay-AHN",
+                    "Cahors": "kah-OR",
+                    "Agen": "ah-ZHAN",
+                    "Mende": "MAHND",
+                    "Angers": "ahn-ZHAY",
+                    "Saint-Lô": "san LOH",
+                    "Châlons-en-Champagne": "shah-lohn ahn shahm-PAN-yuh",
+                    "Chaumont": "shoh-MOHN",
+                    "Laval": "lah-VAL",
+                    "Nancy": "nahn-SEE",
+                    "Bar-le-Duc": "bar luh DOOK",
+                    "Vannes": "VAN",
+                    "Metz": "MES",
+                    "Nevers": "nuh-VAIR",
+                    "Lille": "LEEL",
+                    "Beauvais": "boh-VAY",
+                    "Alençon": "ah-lahn-SOHN",
+                    "Arras": "ah-RAHS",
+                    "Clermont-Ferrand": "klehr-mohn feh-RAHN",
+                    "Pau": "POH",
+                    "Tarbes": "TARB",
+                    "Perpignan": "pair-peen-YAHN",
+                    "Strasbourg": "STRAHS-boor",
+                    "Colmar": "kol-MAR",
+                    "Lyon": "lee-OHN",
+                    "Vesoul": "vuh-ZOOL",
+                    "Mâcon": "mah-KOHN",
+                    "Le Mans": "luh MAHN",
+                    "Chambéry": "shahm-bay-REE",
+                    "Annecy": "an-see",
+                    "Rouen": "roo-AHN",
+                    "Melun": "muh-LAN",
+                    "Versailles": "vair-SIGH",
+                    "Niort": "nee-OR",
+                    "Amiens": "ah-mee-AN",
+                    "Albi": "al-BEE",
+                    "Montauban": "mohn-toh-BAHN",
+                    "Toulon": "too-LOHN",
+                    "Avignon": "ah-veen-YOHN",
+                    "La Roche-sur-Yon": "lah ROSH soor YON",
+                    "Poitiers": "pwah-tee-AY",
+                    "Limoges": "lee-MOHZH",
+                    "Épinal": "ay-pee-NAL",
+                    "Auxerre": "oh-SAIR",
+                    "Belfort": "bel-FOR",
+                    "Évry-Courcouronnes": "ay-vree koor-koo-RON",
+                    "Nanterre": "nahn-TAIR",
+                    "Bobigny": "boh-been-YEE",
+                    "Créteil": "kray-TAY",
+                    "Cergy": "sair-ZHEE"
+                };
+
                 // Create map from department name to SVG path
                 this.departmentPaths = {};
                 if (this.mapData && this.mapData.locations) {
@@ -446,7 +660,7 @@
                 this.enabledQuestionTypes = new Set(['name-to-capital', 'capital-to-name', 'shape-to-name']);
                 this.confidenceScores = this.loadProgress();
                 this.currentQuestion = null;
-                this.hasAnswered = false;
+                this.isCorrect = false;
                 this.totalQuestions = Object.keys(this.departments).length * this.enabledQuestionTypes.size;
                 
                 this.setupQuestionTypeButtons();
@@ -512,7 +726,7 @@
                 return allQuestions[Math.floor(Math.random() * allQuestions.length)];
             }
 
-            checkAnswer(userAnswer, correctAnswer) {
+            checkAnswerMatch(userAnswer, correctAnswer) {
                 const userClean = userAnswer.toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
                 const correctClean = correctAnswer.toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
                 
@@ -566,7 +780,8 @@
                 if (!question) return;
                 
                 this.currentQuestion = question;
-                this.hasAnswered = false;
+                this.isCorrect = false;
+                this.showedAnswer = false;
                 
                 const imageContainer = document.getElementById('imageContainer');
                 imageContainer.innerHTML = '';
@@ -574,9 +789,11 @@
                 let questionText = '';
                 
                 if (question.type === 'name-to-capital') {
-                    questionText = `What is the capital of ${question.dept}?`;
+                    const deptPhonetic = this.phonetics[question.dept] || '';
+                    questionText = `What is the capital of ${question.dept}${deptPhonetic ? ` (${deptPhonetic})` : ''}?`;
                 } else if (question.type === 'capital-to-name') {
-                    questionText = `${question.capital} is the capital of which department?`;
+                    const capitalPhonetic = this.phonetics[question.capital] || '';
+                    questionText = `${question.capital}${capitalPhonetic ? ` (${capitalPhonetic})` : ''} is the capital of which department?`;
                 } else if (question.type === 'shape-to-name') {
                     questionText = `What is the name of this department?`;
                     
@@ -617,9 +834,29 @@
                 }
                 
                 document.getElementById('currentQuestion').textContent = questionText;
-                document.getElementById('answerInput').value = '';
+                const answerInput = document.getElementById('answerInput');
+                answerInput.value = '';
+                answerInput.classList.remove('correct', 'incorrect');
+                answerInput.disabled = false;
+                answerInput.focus();
+                
                 document.getElementById('resultSection').classList.add('hidden');
                 document.getElementById('resultSection').innerHTML = '';
+                
+                // Disable confidence buttons except "Don't know"
+                const confidenceButtons = document.querySelectorAll('.confidence-btn');
+                confidenceButtons.forEach(btn => {
+                    if (btn.id === 'dontKnowBtn') {
+                        btn.disabled = false;
+                    } else {
+                        btn.disabled = true;
+                    }
+                });
+            }
+
+            enableConfidenceButtons() {
+                const confidenceButtons = document.querySelectorAll('.confidence-btn');
+                confidenceButtons.forEach(btn => btn.disabled = false);
             }
         }
 
@@ -634,11 +871,19 @@
             document.getElementById('loadingMessage').textContent = 'Error loading map data. Please refresh the page.';
         }
 
-        window.submitAnswer = function() {
+        window.checkAnswer = function() {
             if (!game || !game.currentQuestion) return;
             
             const userInput = document.getElementById('answerInput').value.trim();
             const resultSection = document.getElementById('resultSection');
+            const answerInput = document.getElementById('answerInput');
+            
+            if (userInput === '') {
+                resultSection.innerHTML = `⚠️ Please type an answer`;
+                resultSection.className = 'result';
+                resultSection.classList.remove('hidden');
+                return;
+            }
             
             let correctAnswer = '';
             if (game.currentQuestion.type === 'name-to-capital') {
@@ -647,45 +892,88 @@
                 correctAnswer = game.currentQuestion.dept;
             }
             
-            if (userInput === '') {
-                resultSection.innerHTML = `<strong>Correct answer:</strong> ${correctAnswer}`;
-                resultSection.className = 'result';
-                resultSection.classList.remove('hidden');
-            } else if (!isNaN(userInput) && userInput >= 1 && userInput <= 5) {
-                window.setConfidence(parseInt(userInput));
-                return;
-            } else {
-                const isCorrect = game.checkAnswer(userInput, correctAnswer);
-                
-                if (isCorrect) {
-                    resultSection.innerHTML = `✅ Correct!<br><strong>Your answer:</strong> ${userInput}`;
-                    resultSection.className = 'result correct';
-                } else {
-                    resultSection.innerHTML = `❌ Incorrect<br><strong>Your answer:</strong> ${userInput}<br><strong>Correct answer:</strong> ${correctAnswer}`;
-                    resultSection.className = 'result incorrect';
-                }
-                resultSection.classList.remove('hidden');
-            }
+            const isCorrect = game.checkAnswerMatch(userInput, correctAnswer);
             
-            game.hasAnswered = true;
+            if (isCorrect) {
+                game.isCorrect = true;
+                answerInput.classList.add('correct');
+                answerInput.classList.remove('incorrect');
+                answerInput.disabled = true;
+                
+                // If they used "Don't know", automatically set confidence to 1 and move on
+                if (game.showedAnswer) {
+                    game.confidenceScores[game.currentQuestion.key] = 1;
+                    game.saveProgress();
+                    game.updateProgress();
+                    
+                    resultSection.innerHTML = `✅ Correct! Moving to next question...`;
+                    resultSection.className = 'result correct';
+                    resultSection.classList.remove('hidden');
+                    
+                    setTimeout(() => {
+                        game.displayQuestion();
+                    }, 1200);
+                } else {
+                    resultSection.innerHTML = `✅ Correct! Now rate your confidence to continue.`;
+                    resultSection.className = 'result correct';
+                    resultSection.classList.remove('hidden');
+                    
+                    // Enable confidence buttons
+                    game.enableConfidenceButtons();
+                }
+            } else {
+                answerInput.classList.add('incorrect');
+                answerInput.classList.remove('correct');
+                
+                const phonetic = game.phonetics[correctAnswer] || '';
+                resultSection.innerHTML = `❌ Incorrect. The correct answer is: <strong>${correctAnswer}${phonetic ? ` (${phonetic})` : ''}</strong><br>Please type it correctly to continue.`;
+                resultSection.className = 'result incorrect';
+                resultSection.classList.remove('hidden');
+                
+                // Clear the input for retry
+                answerInput.value = '';
+                answerInput.focus();
+            }
         };
 
         window.setConfidence = function(level) {
             if (!game || !game.currentQuestion) return;
-            if (!game.hasAnswered) window.submitAnswer();
+            
+            // If "Don't know" is clicked and answer hasn't been shown yet
+            if (level === 1 && !game.showedAnswer) {
+                let correctAnswer = '';
+                if (game.currentQuestion.type === 'name-to-capital') {
+                    correctAnswer = game.currentQuestion.capital;
+                } else {
+                    correctAnswer = game.currentQuestion.dept;
+                }
+                
+                const phonetic = game.phonetics[correctAnswer] || '';
+                const resultSection = document.getElementById('resultSection');
+                const answerInput = document.getElementById('answerInput');
+                
+                resultSection.innerHTML = `ℹ️ The correct answer is: <strong>${correctAnswer}${phonetic ? ` (${phonetic})` : ''}</strong><br>Please type it in to continue.`;
+                resultSection.className = 'result';
+                resultSection.classList.remove('hidden');
+                
+                game.showedAnswer = true;
+                answerInput.focus();
+                return;
+            }
+            
+            // Normal flow - only proceed if answer is correct
+            if (!game.isCorrect) return;
             
             game.confidenceScores[game.currentQuestion.key] = level;
             game.saveProgress();
             game.updateProgress();
             
             const resultSection = document.getElementById('resultSection');
-            resultSection.innerHTML += `<br><strong>Confidence set to level ${level}</strong>`;
+            resultSection.innerHTML += `<br><strong>Confidence level ${level} recorded!</strong>`;
             
-            setTimeout(() => window.nextQuestion(), 1500);
-        };
-
-        window.nextQuestion = function() {
-            if (game) game.displayQuestion();
+            setTimeout(() => {
+                game.displayQuestion();
+            }, 800);
         };
 
         window.startSession = function() {
@@ -695,7 +983,9 @@
         };
 
         document.getElementById('answerInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') window.submitAnswer();
+            if (e.key === 'Enter') {
+                window.checkAnswer();
+            }
         });
     </script>
 </body>
