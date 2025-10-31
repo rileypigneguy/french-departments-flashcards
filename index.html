@@ -661,6 +661,7 @@
                 this.confidenceScores = this.loadProgress();
                 this.currentQuestion = null;
                 this.isCorrect = false;
+                this.recentQuestions = [];
                 this.totalQuestions = Object.keys(this.departments).length * this.enabledQuestionTypes.size;
                 
                 this.setupQuestionTypeButtons();
@@ -683,6 +684,13 @@
                             btn.classList.add('active');
                         }
                         this.totalQuestions = Object.keys(this.departments).length * this.enabledQuestionTypes.size;
+                        
+                        // Clear working set and wrong answer queue when types change
+                        this.workingSet = [];
+                        this.workingSetIndex = 0;
+                        this.wrongAnswerQueue = [];
+                        this.questionsSinceWrong = new Map();
+                        
                         this.updateProgress();
                     });
                 });
@@ -708,22 +716,111 @@
             }
 
             selectQuestion() {
-                const allQuestions = [];
+                // Track the questions we got wrong recently - these get IMMEDIATE priority
+                if (!this.wrongAnswerQueue) this.wrongAnswerQueue = [];
+                if (!this.questionsSinceWrong) this.questionsSinceWrong = new Map();
+                
+                // Clean wrong answer queue - remove questions that aren't in enabled types anymore
+                this.wrongAnswerQueue = this.wrongAnswerQueue.filter(q => this.enabledQuestionTypes.has(q.type));
+                
+                // Check if we have any wrong answers that need immediate review
+                // Review wrong answers after just 1-3 other questions
+                const readyForReview = this.wrongAnswerQueue.filter(q => {
+                    const questionsSince = this.questionsSinceWrong.get(q.key) || 0;
+                    return questionsSince >= Math.floor(Math.random() * 3) + 1; // 1-3 questions
+                });
+                
+                if (readyForReview.length > 0) {
+                    // Pick the one that's been waiting longest
+                    const selected = readyForReview[0];
+                    
+                    // Remove from queue and reset counter
+                    this.wrongAnswerQueue = this.wrongAnswerQueue.filter(q => q.key !== selected.key);
+                    this.questionsSinceWrong.delete(selected.key);
+                    
+                    return selected;
+                }
+                
+                // Increment counters for all questions in wrong answer queue
+                for (const q of this.wrongAnswerQueue) {
+                    const current = this.questionsSinceWrong.get(q.key) || 0;
+                    this.questionsSinceWrong.set(q.key, current + 1);
+                }
+                
+                // Separate questions by confidence level
+                const level1 = []; // Don't know
+                const level2 = []; // Very uncertain
+                const level3 = []; // Somewhat confident
+                const level4 = []; // Quite confident
+                const level5 = []; // Completely confident
                 
                 for (const [dept, data] of Object.entries(this.departments)) {
                     for (const type of this.enabledQuestionTypes) {
                         const key = `${dept}:${type}`;
                         const confidence = this.confidenceScores[key];
-                        const weight = Math.pow(6 - confidence, 2);
+                        const questionObj = {dept, capital: data.capital, number: data.number, type, key};
                         
-                        for (let i = 0; i < weight; i++) {
-                            allQuestions.push({dept, capital: data.capital, number: data.number, type, key});
-                        }
+                        if (confidence === 1) level1.push(questionObj);
+                        else if (confidence === 2) level2.push(questionObj);
+                        else if (confidence === 3) level3.push(questionObj);
+                        else if (confidence === 4) level4.push(questionObj);
+                        else if (confidence === 5) level5.push(questionObj);
                     }
                 }
                 
-                if (allQuestions.length === 0) return null;
-                return allQuestions[Math.floor(Math.random() * allQuestions.length)];
+                // Create small working set (5-8 questions) from level 1
+                if (!this.workingSet) this.workingSet = [];
+                if (!this.workingSetIndex) this.workingSetIndex = 0;
+                
+                // If we have level 1 items, focus on small batches
+                if (level1.length > 0) {
+                    // Refresh working set if empty or outdated
+                    if (this.workingSet.length === 0 || 
+                        !this.workingSet.every(q => level1.some(l => l.key === q.key))) {
+                        const batchSize = Math.min(5, level1.length); // Just 5 at a time!
+                        this.workingSet = level1.slice(0, batchSize);
+                        this.workingSetIndex = 0;
+                    }
+                    
+                    // Cycle through working set
+                    const selected = this.workingSet[this.workingSetIndex];
+                    this.workingSetIndex = (this.workingSetIndex + 1) % this.workingSet.length;
+                    
+                    return selected;
+                }
+                
+                // Level 2: small working set of 8
+                if (level2.length > 0) {
+                    if (this.workingSet.length === 0 || 
+                        !this.workingSet.every(q => level2.some(l => l.key === q.key))) {
+                        const batchSize = Math.min(8, level2.length);
+                        this.workingSet = level2.slice(0, batchSize);
+                        this.workingSetIndex = 0;
+                    }
+                    
+                    const selected = this.workingSet[this.workingSetIndex];
+                    this.workingSetIndex = (this.workingSetIndex + 1) % this.workingSet.length;
+                    
+                    return selected;
+                }
+                
+                // For level 3+, mix them up more
+                const pool = [...level3, ...level4, ...level5];
+                
+                if (pool.length === 0) return null;
+                
+                // Avoid same question twice in a row
+                if (!this.lastQuestion) this.lastQuestion = null;
+                
+                let selected;
+                let attempts = 0;
+                do {
+                    selected = pool[Math.floor(Math.random() * pool.length)];
+                    attempts++;
+                } while (attempts < 20 && pool.length > 1 && this.lastQuestion && selected.key === this.lastQuestion.key);
+                
+                this.lastQuestion = selected;
+                return selected;
             }
 
             checkAnswerMatch(userAnswer, correctAnswer) {
@@ -900,7 +997,7 @@
                 answerInput.classList.remove('incorrect');
                 answerInput.disabled = true;
                 
-                // If they used "Don't know", automatically set confidence to 1 and move on
+                // ALWAYS automatically move on if they used "Don't know" or got it wrong before
                 if (game.showedAnswer) {
                     game.confidenceScores[game.currentQuestion.key] = 1;
                     game.saveProgress();
@@ -912,8 +1009,9 @@
                     
                     setTimeout(() => {
                         game.displayQuestion();
-                    }, 1200);
+                    }, 800);
                 } else {
+                    // Only ask for confidence if they got it right on first try
                     resultSection.innerHTML = `✅ Correct! Now rate your confidence to continue.`;
                     resultSection.className = 'result correct';
                     resultSection.classList.remove('hidden');
@@ -922,6 +1020,19 @@
                     game.enableConfidenceButtons();
                 }
             } else {
+                // WRONG ANSWER - Add to immediate review queue
+                if (!game.wrongAnswerQueue) game.wrongAnswerQueue = [];
+                if (!game.questionsSinceWrong) game.questionsSinceWrong = new Map();
+                
+                // Add to queue if not already there
+                if (!game.wrongAnswerQueue.some(q => q.key === game.currentQuestion.key)) {
+                    game.wrongAnswerQueue.push({...game.currentQuestion});
+                    game.questionsSinceWrong.set(game.currentQuestion.key, 0);
+                }
+                
+                // Mark that we showed the answer (so next time it's correct, auto-move on)
+                game.showedAnswer = true;
+                
                 answerInput.classList.add('incorrect');
                 answerInput.classList.remove('correct');
                 
