@@ -778,7 +778,9 @@
                     if (this.workingSet.length === 0 || 
                         !this.workingSet.every(q => level1.some(l => l.key === q.key))) {
                         const batchSize = Math.min(5, level1.length); // Just 5 at a time!
-                        this.workingSet = level1.slice(0, batchSize);
+                        // Shuffle level1 before selecting
+                        const shuffled = [...level1].sort(() => Math.random() - 0.5);
+                        this.workingSet = shuffled.slice(0, batchSize);
                         this.workingSetIndex = 0;
                     }
                     
@@ -794,7 +796,9 @@
                     if (this.workingSet.length === 0 || 
                         !this.workingSet.every(q => level2.some(l => l.key === q.key))) {
                         const batchSize = Math.min(8, level2.length);
-                        this.workingSet = level2.slice(0, batchSize);
+                        // Shuffle level2 before selecting
+                        const shuffled = [...level2].sort(() => Math.random() - 0.5);
+                        this.workingSet = shuffled.slice(0, batchSize);
                         this.workingSetIndex = 0;
                     }
                     
